@@ -203,6 +203,9 @@ class OpenID_Connect_Generic_Client_Wrapper
             $this->error_redirect($valid);
         }
 
+        $cognito_groups = $client->get_cognito_groups($id_token_claim);
+        $this->add_cognito_groups_to_plugin_groups($cognito_groups, $user->ID);
+
         // login the found / created user
         $this->login_user($user, $token_response, $id_token_claim, $user_claim, $subject_identity);
 
@@ -781,5 +784,40 @@ class OpenID_Connect_Generic_Client_Wrapper
         }
 
         return $request;
+    }
+
+    /**
+     * Add Cognito groups to matching groups from the plugin (https://wordpress.org/plugins/groups/)
+     * (most of this code was lifted directly from there)
+     *
+     * Groups that don't exist are created
+     *
+     */
+
+
+    function add_cognito_groups_to_plugin_groups($cognito_groups, $user_id = 1)
+    {
+        global $wpdb; // sadly, there's no good way around this
+
+        foreach ($cognito_groups as $cognito_group_name) {
+
+            //create the groups if they don't exist
+            if (!($group = Groups_Group::read_by_name($cognito_group_name))) {
+                $group_id = Groups_Group::create(['name' => $cognito_group_name]);
+            } else {
+                $group_id = $group->group_id;
+            }
+
+            // add user to group
+            if ($group_id) {
+                $user_group_table = _groups_get_tablename('user_group');
+                $query = $wpdb->prepare(
+                    "INSERT IGNORE INTO $user_group_table " .
+                    "VALUES ($user_id, %d)",
+                    Groups_Utility::id($group_id)
+                );
+                $rowset = $wpdb->query($query);
+            }
+        }
     }
 }
