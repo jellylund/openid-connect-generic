@@ -118,6 +118,18 @@ class OpenID_Connect_Generic_Settings_Page
                 'type' => 'text',
                 'section' => 'client_settings',
             ),
+            'is_cognito' => array(
+                'title' => __('Integration for Cognito'),
+                'description' => __('Allows the plugin to pull group data from the \'id_token\' (AWS Cognito isn\'t quite OIDC compliant).'),
+                'type' => 'checkbox',
+                'section' => 'client_settings',
+            ),
+            'is_groups_integrated' => array(
+                'title' => __('Integration for "Groups" plugin'),
+                'description' => __('Copies Cognito group data into "Groups" group data on every login.'),
+                'type' => 'checkbox',
+                'section' => 'client_settings',
+            ),
             'enforce_privacy' => array(
                 'title' => __('Enforce Privacy'),
                 'description' => __('Require users be logged in to see the site.'),
@@ -193,6 +205,7 @@ class OpenID_Connect_Generic_Settings_Page
                 'type' => 'number',
                 'section' => 'log_settings',
             ),
+
         );
 
         $fields = apply_filters('openid-connect-generic-settings-fields', $fields);
