@@ -203,8 +203,11 @@ class OpenID_Connect_Generic_Client_Wrapper
             $this->error_redirect($valid);
         }
 
-        $cognito_groups = $client->get_cognito_groups($id_token_claim);
-        $this->add_cognito_groups_to_plugin_groups($cognito_groups, $user->ID);
+        if ($this->settings->is_cognito && $this->settings->is_groups_integrated) {
+            $cognito_groups = $client->get_users_cognito_groups($id_token_claim);
+            $groups_groups = $this->add_cognito_groups_to_plugin_groups($cognito_groups);
+            $this->add_user_to_groups_groups($groups_groups, $user->ID);
+        }
 
         // login the found / created user
         $this->login_user($user, $token_response, $id_token_claim, $user_claim, $subject_identity);
@@ -793,11 +796,9 @@ class OpenID_Connect_Generic_Client_Wrapper
      * Groups that don't exist are created
      *
      */
-
-
-    function add_cognito_groups_to_plugin_groups($cognito_groups, $user_id = 1)
+    function add_cognito_groups_to_plugin_groups($cognito_groups)
     {
-        global $wpdb; // sadly, there's no good way around this
+        $groups_user_groupids_mapped_from_cognito_groups = [];
 
         foreach ($cognito_groups as $cognito_group_name) {
 
@@ -808,16 +809,34 @@ class OpenID_Connect_Generic_Client_Wrapper
                 $group_id = $group->group_id;
             }
 
-            // add user to group
-            if ($group_id) {
-                $user_group_table = _groups_get_tablename('user_group');
-                $query = $wpdb->prepare(
-                    "INSERT IGNORE INTO $user_group_table " .
-                    "VALUES ($user_id, %d)",
-                    Groups_Utility::id($group_id)
-                );
-                $rowset = $wpdb->query($query);
-            }
+            $groups_user_groupids_mapped_from_cognito_groups[] = $group_id;
         }
+        return $groups_user_groupids_mapped_from_cognito_groups;
+    }
+
+    function add_user_to_groups_groups($groups_group_ids, $user_id)
+    {
+
+        global $wpdb; // Seems weird right? It's pretty much the "accepted" way to do DB operations in wp.
+        $user_group_table = _groups_get_tablename('user_group');
+
+        $wpdb->query('START TRANSACTION;');
+
+        //clear the existing group data (group_id 1 is the "registered" group, which is the required
+        $clear_groups_query = $wpdb->prepare("DELETE FROM $user_group_table WHERE user_id = %d AND group_id != 1;", $user_id);
+        $wpdb->query($clear_groups_query);
+
+        foreach ($groups_group_ids as $group_id) {
+            $update_groups_query = $wpdb->prepare(
+                "INSERT INTO `$user_group_table` (user_id, group_id) " .
+                "VALUES (%d, %d);",
+                intval($user_id),
+                Groups_Utility::id($group_id)
+            );
+            $wpdb->query($update_groups_query);
+        }
+
+        $wpdb->query('COMMIT;');
+
     }
 }
