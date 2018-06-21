@@ -129,6 +129,7 @@ class OpenID_Connect_Generic
                 'email_format' => '{email}',
                 'displayname_format' => '',
                 'identify_with_username' => false,
+                'is_cognito' => false,
 
                 // plugin settings
                 'enforce_privacy' => 0,
@@ -138,6 +139,7 @@ class OpenID_Connect_Generic
                 'redirect_on_logout' => 1,
                 'enable_logging' => 0,
                 'log_limit' => 1000,
+                'is_groups_integrated' => false,
             )
         );
 
