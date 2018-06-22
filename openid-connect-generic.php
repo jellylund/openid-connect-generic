@@ -1,12 +1,11 @@
 <?php
 /*
-Plugin Name: OpenID Connect Generic
-Plugin URI: https://github.com/daggerhart/openid-connect-generic
+Plugin Name: OpenID Connect Generic -> Cognito + Groups Integration Fork
+Plugin URI: https://github.com/ianknox-jv/openid-connect-generic
 Description:  Connect to an OpenID Connect generic client using Authorization Code Flow
-Version: 3.4.0
-Author: daggerhart
-Author URI: http://www.daggerhart.com
-License: GPLv2 Copyright (c) 2015 daggerhart
+Version: 3.4.0-Fork
+Author: http://www.daggerhart.com & Ian Knox
+License: GPLv2 Copyright (c) 2015 daggerhart & Ian Knox
 */
 
 /* 
@@ -42,7 +41,7 @@ Notes
 class OpenID_Connect_Generic
 {
     // plugin version
-    const VERSION = '3.4.0';
+    const VERSION = '3.4.0-Fork';
 
     // plugin settings
     private $settings;
