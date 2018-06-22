@@ -763,9 +763,16 @@ class OpenID_Connect_Generic_Client_Wrapper
                (we would *not* disconnect the user from any Google service even if he was
                initially disconnected to them) */
             return $redirect_url;
+        } elseif ($this->settings->is_cognito && isset($claim['iss']) && stripos($claim['iss'], 'cognito-idp') !== false){
+            /* AWS Cognito revoke endpoint
+            see: https://docs.aws.amazon.com/cognito/latest/developerguide/logout-endpoint.html
+            */
+            return $url .  sprintf('client_id=%s&redirect_uri=%s', $this->settings->client_id, urlencode($redirect_url));
         } else {
+
             return $url . sprintf('id_token_hint=%s&post_logout_redirect_uri=%s', $token_response['id_token'], urlencode($redirect_url));
         }
+
     }
 
     /**
@@ -822,8 +829,13 @@ class OpenID_Connect_Generic_Client_Wrapper
 
         $wpdb->query('START TRANSACTION;');
 
-        //clear the existing group data (group_id 1 is the "registered" group, which is the required
-        $clear_groups_query = $wpdb->prepare("DELETE FROM $user_group_table WHERE user_id = %d AND group_id != 1;", $user_id);
+        // clear the existing group data
+        // (group_id 1 is the "registered" group, which everyone should be a part of at all times.)
+        $clear_groups_query = $wpdb->prepare(
+            "DELETE FROM $user_group_table WHERE user_id = %d AND group_id != 1;",
+            $user_id
+        );
+
         $wpdb->query($clear_groups_query);
 
         foreach ($groups_group_ids as $group_id) {
