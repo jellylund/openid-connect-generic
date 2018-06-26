@@ -138,7 +138,7 @@ class OpenID_Connect_Generic_Settings_Page
             ),
             'privacy_exceptions' => array(
                 'title' => __('Privacy Exceptions'),
-                'description' => __('A list of URLs that do not require users to be logged in, even when privacy is enforced. Enter each URL on a new line.'),
+                'description' => __('A list of permalinks that do not require users to be logged in, even when privacy is enforced. Enter <b>only the permalink</b> on a new line (for example, to make "http://site.com/page" public, enter "page" on its own line.'),
                 'type' => 'textarea',
                 'section' => 'authorization_settings',
             ),
