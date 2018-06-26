@@ -764,12 +764,13 @@ class OpenID_Connect_Generic_Client_Wrapper
                initially disconnected to them) */
             return $redirect_url;
         } elseif ($this->settings->is_cognito && isset($claim['iss']) && stripos($claim['iss'], 'cognito-idp') !== false){
-            /* AWS Cognito revoke endpoint
-            see: https://docs.aws.amazon.com/cognito/latest/developerguide/logout-endpoint.html
+            /* AWS Cognito revoke endpoint (https://docs.aws.amazon.com/cognito/latest/developerguide/logout-endpoint.html)
+               
+               The /logout endpoint automatically redirects to the /login endpoint, 
+               so we pass along the necessary query parameters to prevent an error.
             */
-            return $url .  sprintf('client_id=%s&redirect_uri=%s', $this->settings->client_id, urlencode($redirect_url));
+            return $url .  sprintf('response_type=code&state=%s&client_id=%s&redirect_uri=%s', $this->client->new_state(), $this->settings->client_id, admin_url('admin-ajax.php?action=openid-connect-authorize'));
         } else {
-
             return $url . sprintf('id_token_hint=%s&post_logout_redirect_uri=%s', $token_response['id_token'], urlencode($redirect_url));
         }
 
