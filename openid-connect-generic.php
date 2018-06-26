@@ -132,6 +132,7 @@ class OpenID_Connect_Generic
 
                 // plugin settings
                 'enforce_privacy' => 0,
+                'privacy_exceptions' => '',
                 'alternate_redirect_uri' => 0,
                 'link_existing_users' => 0,
                 'redirect_user_back' => 0,
@@ -224,7 +225,11 @@ class OpenID_Connect_Generic
      */
     function enforce_privacy_redirect()
     {
-        if ($this->settings->enforce_privacy && !is_user_logged_in()) {
+        global $wp;
+        $current_url = add_query_arg( $_SERVER['QUERY_STRING'], '', home_url( $wp->request . '/' ) );
+        $url_is_not_exception = strpos($this->settings->privacy_exceptions, $current_url) === false;
+
+        if ($this->settings->enforce_privacy && !is_user_logged_in() && $url_is_not_exception) {
             // our client endpoint relies on the wp admind ajax endpoint
             if (!defined('DOING_AJAX') || !DOING_AJAX || !isset($_GET['action']) || $_GET['action'] != 'openid-connect-authorize') {
                 auth_redirect();

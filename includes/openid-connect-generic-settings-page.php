@@ -136,6 +136,12 @@ class OpenID_Connect_Generic_Settings_Page
                 'type' => 'checkbox',
                 'section' => 'authorization_settings',
             ),
+            'privacy_exceptions' => array(
+                'title' => __('Privacy Exceptions'),
+                'description' => __('A list of URLs that do not require users to be logged in, even when privacy is enforced. Enter each URL on a new line.'),
+                'type' => 'textarea',
+                'section' => 'authorization_settings',
+            ),
             'alternate_redirect_uri' => array(
                 'title' => __('Alternate Redirect URI'),
                 'description' => __('Provide an alternative redirect route. Useful if your server is causing issues with the default admin-ajax method. You must flush rewrite rules after changing this setting. This can be done by saving the Permalinks settings page.'),
@@ -304,6 +310,10 @@ class OpenID_Connect_Generic_Settings_Page
                     $callback = 'do_select';
                     break;
 
+                case 'textarea':
+                    $callback = 'do_text_area';
+                    break;
+
                 case 'text':
                 default:
                     $callback = 'do_text_field';
@@ -334,7 +344,17 @@ class OpenID_Connect_Generic_Settings_Page
         // loop through settings fields to control what we're saving
         foreach ($this->settings_fields as $key => $field) {
             if (isset($input[$key])) {
-                $options[$key] = sanitize_text_field(trim($input[$key]));
+                $trimmed = trim($input[$key]);
+                switch ($field['type']) {
+                    case 'textarea':
+                        $options[$key] = sanitize_textarea_field($trimmed);
+                        break;
+
+                    case 'text':
+                    default:
+                        $options[$key] = sanitize_text_field($trimmed);
+                        break;
+                }           
             } else {
                 $options[$key] = '';
             }
@@ -405,6 +425,21 @@ class OpenID_Connect_Generic_Settings_Page
                class="large-text"
                name="<?php print esc_attr($field['name']); ?>"
                value="<?php print esc_attr($this->settings->{$field['key']}); ?>">
+        <?php
+        $this->do_field_description($field);
+    }
+
+    /**
+     * Output a text area
+     *
+     * @param $field
+     */
+    public function do_text_area($field)
+    {    
+        ?>
+        <textarea id="<?php print esc_attr($field['key']); ?>"
+               class="large-text" rows="<?php print substr_count( $this->settings->{$field['key']}, "\n" ) + 2; ?>"
+               name="<?php print esc_attr($field['name']); ?>"><?php print esc_attr($this->settings->{$field['key']}); ?></textarea>
         <?php
         $this->do_field_description($field);
     }
