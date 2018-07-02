@@ -130,6 +130,12 @@ class OpenID_Connect_Generic_Settings_Page
                 'type' => 'checkbox',
                 'section' => 'client_settings',
             ),
+            'email_domains_to_make_customers' => array(
+                'title' => __('Email domains to treat as customers'),
+                'description' => __('Any user associated with one of these email domains will be treated like a customer, regardless of their setup in Salesforce and Cognito'),
+                'type' => 'textarea',
+                'section' => 'client_settings',
+            ),
             'enforce_privacy' => array(
                 'title' => __('Enforce Privacy'),
                 'description' => __('Require users be logged in to see the site.'),
