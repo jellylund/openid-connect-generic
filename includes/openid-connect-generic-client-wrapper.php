@@ -206,7 +206,17 @@ class OpenID_Connect_Generic_Client_Wrapper
         if ($this->settings->is_cognito && $this->settings->is_groups_integrated) {
             $cognito_groups = $client->get_users_cognito_groups($id_token_claim);
             $groups_groups = $this->add_cognito_groups_to_plugin_groups($cognito_groups);
-            $this->add_user_to_groups_groups($groups_groups, $user->ID);
+            
+            $domain = explode('@', $user->get('user_email'))[1];
+            if(strpos($this->settings->email_domains_to_make_customers, $domain) !== false) {
+                /*
+                    Hacky workaround to treat some partners more like customers
+                    without adding another group/role in Cognito
+                */
+                $this->add_user_to_customers_group($user->ID);
+            } else {
+                $this->add_user_to_groups_groups($groups_groups, $user->ID);
+            }
         }
 
         // login the found / created user
@@ -851,5 +861,34 @@ class OpenID_Connect_Generic_Client_Wrapper
 
         $wpdb->query('COMMIT;');
 
+    }
+
+    function add_user_to_customers_group($user_id)
+    {
+        $group = Groups_Group::read_by_name('customers');
+
+        global $wpdb; // Seems weird right? It's pretty much the "accepted" way to do DB operations in wp.
+        $user_group_table = _groups_get_tablename('user_group');
+
+        $wpdb->query('START TRANSACTION;');
+
+        // clear the existing group data
+        // (group_id 1 is the "registered" group, which everyone should be a part of at all times.)
+        $clear_groups_query = $wpdb->prepare(
+            "DELETE FROM $user_group_table WHERE user_id = %d AND group_id != 1;",
+            $user_id
+        );
+
+        $wpdb->query($clear_groups_query);
+
+        $update_groups_query = $wpdb->prepare(
+            "INSERT INTO `$user_group_table` (user_id, group_id) " .
+            "VALUES (%d, %d);",
+            intval($user_id),
+            Groups_Utility::id($group->group_id)
+        );
+        $wpdb->query($update_groups_query);
+
+        $wpdb->query('COMMIT;');
     }
 }
