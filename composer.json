@@ -1,14 +1,19 @@
 {
-  "name": "daggerhart/openid-connect-generic",
+  "name": "ianknox-jv/openid-connect-generic",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-only",
   "description": "OpenID Connect generic WordPress plugin.",
-  "homepage": "https://github.com/daggerhart/openid-connect-generic",
+  "homepage": "https://github.com/ianknox-jv/openid-connect-generic",
   "authors": [
     {
       "name": "Jonathan Daggerhart",
       "email": "jonathan@daggerhart.com",
       "homepage": "https://github.com/daggerhart"
+    },
+    {
+      "name": "Ian Knox",
+      "email": "ian@jellyvision.com",
+      "homepage": "http://jellyvision.com"
     }
   ],
   "keywords": [
