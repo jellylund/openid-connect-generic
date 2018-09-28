@@ -226,7 +226,7 @@ class OpenID_Connect_Generic
     function enforce_privacy_redirect()
     {
         global $wp;
-        $url_is_exception = in_array($wp->request, explode("\n", $this->settings->privacy_exceptions));
+        $url_is_exception = in_array($wp->request, explode("\r\n", $this->settings->privacy_exceptions));
 
         if ($this->settings->enforce_privacy && !is_user_logged_in() && !$url_is_exception) {
             // our client endpoint relies on the wp admind ajax endpoint
